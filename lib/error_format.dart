@@ -42,13 +42,12 @@ class ErrorFormat {
 
     if (stackTrace != null) {
       errorJson['stacktrace'] = <String, dynamic>{
-        'frames':
-        _encodeStackTrace(stackTrace),
+        'frames': _encodeStackTrace(stackTrace),
       };
     }
     try {
       return json.encode(errorJson);
-    } catch(e) {
+    } catch (e) {
       return "error format failed";
     }
   }
@@ -83,7 +82,8 @@ class ErrorFormat {
     return json;
   }
 
-  final Map<String, dynamic> _asynchronousGapFrameJson = const <String, dynamic>{
+  final Map<String, dynamic> _asynchronousGapFrameJson =
+      const <String, dynamic>{
     'abs_path': '<asynchronous suspension>',
   };
 

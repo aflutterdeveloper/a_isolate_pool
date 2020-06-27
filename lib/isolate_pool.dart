@@ -41,7 +41,6 @@ class IsolatePool {
     return IsolateService.logger;
   }
 
-
   /// 构建一个隔离线程池
   IsolatePool.build(int threadCount, [String tag])
       : _threadCount = threadCount ?? 1,
@@ -57,8 +56,7 @@ class IsolatePool {
   Future<R> run<T, R>(ARunnable<T, R> runnable, T param,
       {String debugLabel}) async {
     if (_threadCount > 0) {
-      return (await _getNextThread())
-          .run(runnable, param);
+      return (await _getNextThread()).run(runnable, param);
     } else {
       logger(LOG_LEVEL.ERROR, "IsolatePool", "run thread pool is empty");
     }

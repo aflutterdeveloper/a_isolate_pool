@@ -1,8 +1,7 @@
 name: aisolatepool
 description: a isolate pool
-version: 0.0.1
-author: adeveloper.tech
-homepage: https://adeveloper.com
+version: 0.0.2
+homepage: https://github.com/aflutterdeveloper/a_isolate_pool
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

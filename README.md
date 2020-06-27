@@ -2,12 +2,35 @@
 Help developers use Isolate more friendly under the flutter framework to activate the multi-core performance of the device.
 
 ## Getting Started
+### example:
+```
+//define a top-level function
+bool testIsolateRun(Object any) {
+  IsolatePool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+  return true;
+}
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+//Run testIsolateRun in the isolated thread pool
+IsolatePool.io.run(testIsolateRun, "params for testIsolateRun");
+//Run testIsolateRun in the isolated thread pool with custom params
+IsolatePool.io.run(testIsolateRun, _AnyParam(true, 200, 200.0,"stringParam"))
+        .catchError((error){
+        //catch exception from isolate thread
+});
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+
+class _AnyParam {
+  final bool boolParam;
+  final int intParam;
+  final double doubleParam;
+  final String stringParam;
+
+  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam);
+
+  @override
+  String toString() {
+    return "bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam";
+  }
+}
+
+```

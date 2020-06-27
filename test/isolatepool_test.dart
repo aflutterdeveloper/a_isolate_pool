@@ -1,8 +1,8 @@
 import 'dart:isolate';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isolatepool/isolate_pool.dart';
-import 'package:isolatepool/isolate_service.dart';
+import 'package:aisolatepool/isolate_pool.dart';
+import 'package:aisolatepool/isolate_service.dart';
 
 void main() {
   test('test io thread', () async {
