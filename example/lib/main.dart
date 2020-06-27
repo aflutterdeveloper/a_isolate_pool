@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
-import 'package:aisolatepool/aisolatepool.dart';
+import 'package:aisolatepool/isolate_pool.dart';
+import 'package:aisolatepool/isolate_service.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
