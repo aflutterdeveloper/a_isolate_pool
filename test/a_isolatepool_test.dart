@@ -1,20 +1,19 @@
 import 'dart:isolate';
 
-import 'package:a_isolate_pool/a_isolate_pool.dart';
-import 'package:a_isolate_pool/isolate_pool.dart';
+import 'package:a_thread_pool/a_thread_pool.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('test io thread', () async {
-    IsolatePool.logger = testLogger;
-    expect(await IsolatePool.io.run(testIsolateRun, "params for testIsolateRun"), true);
-    expect(await IsolatePool.io.run(testIsolateRun, _AnyParam(true, 200, 200.0,"stringParam")), true);
+    ThreadPool.logger = testLogger;
+    expect(await ThreadPool.io.run(testIsolateRun, "params for testIsolateRun"), true);
+    expect(await ThreadPool.io.run(testIsolateRun, _AnyParam(true, 200, 200.0,"stringParam")), true);
     //expect(() => IsolatePool.io.addOne(null), throwsNoSuchMethodError);
   });
 }
 
 bool testIsolateRun(Object any) {
-  IsolatePool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+  ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
   return true;
 }
 

@@ -30,26 +30,26 @@ import 'error_format.dart';
 
 typedef ARunnable<T, R> = FutureOr<R> Function(T param);
 typedef AVoidRunnable = Future<void> Function();
-typedef AIsolateLogger = void Function(
+typedef AThreadLogger = void Function(
     LOG_LEVEL level, String tag, String message);
 
-class IsolateService {
+class ThreadService {
   final String _tag;
   _IsolateClient _client;
 
-  static AIsolateLogger _aIsolateLogger;
+  static AThreadLogger _aIsolateLogger;
 
-  static set logger(AIsolateLogger logger) {
+  static set logger(AThreadLogger logger) {
     _aIsolateLogger = logger;
   }
 
-  static AIsolateLogger get logger {
-    return IsolateService._threadServiceLogger;
+  static AThreadLogger get logger {
+    return ThreadService._threadServiceLogger;
   }
 
   ///构建一个线程服务
   ///@param String tag 线程标识
-  IsolateService.build([String tag]) : _tag = tag ?? _randomTag() {
+  ThreadService.build([String tag]) : _tag = tag ?? _randomTag() {
     logger(LOG_LEVEL.INFO, "IsolatePool", "building isolate $_tag");
     _client = _IsolateClient(_tag);
   }
@@ -143,19 +143,19 @@ class _IsolateClient {
             initCompleter.complete();
           } else if (response is _ServiceLog) {
             if (!isThread()) {
-              IsolateService._threadServiceLogger(
+              ThreadService._threadServiceLogger(
                   LOG_LEVEL.INFO, response.tag, response.message);
             }
           }
         },
         onError: (error) {
-          IsolateService._threadServiceLogger(
+          ThreadService._threadServiceLogger(
               LOG_LEVEL.INFO, _tag, "unknown error ${error.toString()}");
         },
         cancelOnError: true,
         onDone: () {
           _working = false;
-          IsolateService._threadServiceLogger(
+          ThreadService._threadServiceLogger(
               LOG_LEVEL.INFO, _tag, "thread client closed");
         });
 
@@ -210,7 +210,7 @@ class _IsolateServer {
               final result = await request.invoke();
               _clientPort.send(_ServiceResponse(request.seq, result));
             } catch (err, stack) {
-              IsolateService._threadServiceLogger(LOG_LEVEL.ERROR,
+              ThreadService._threadServiceLogger(LOG_LEVEL.ERROR,
                   "_ThreadServer", ErrorFormat(err, stack).toJson());
 
               if (err is AException) {
@@ -230,19 +230,19 @@ class _IsolateServer {
                   .send(_ServiceError(request.seq, AException(errorMessage)));
             }
           } else if (request is _ServiceDestroy) {
-            IsolateService._threadServiceLogger(
+            ThreadService._threadServiceLogger(
                 LOG_LEVEL.INFO, _tag, "thread server destroyed");
             _receivePort.close();
           }
         },
         onError: (error) {
-          IsolateService._threadServiceLogger(
+          ThreadService._threadServiceLogger(
               LOG_LEVEL.ERROR, _tag, "unknown error ${error.toString()}");
         },
         cancelOnError: true,
         onDone: () {
           loggerPort = null;
-          IsolateService._threadServiceLogger(
+          ThreadService._threadServiceLogger(
               LOG_LEVEL.INFO, _tag, "thread server closed");
         });
 

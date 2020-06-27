@@ -22,27 +22,27 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'isolate_service.dart';
+import 'thread_service.dart';
 
-class IsolatePool {
-  static final IsolatePool io = IsolatePool.build(
+class ThreadPool {
+  static final ThreadPool io = ThreadPool.build(
       max(3, (Platform.numberOfProcessors * 0.6).floor()), "io_thread_pool");
 
   final String _tag;
   final int _threadCount;
-  final Map<int, IsolateService> _threadMap = Map<int, IsolateService>();
+  final Map<int, ThreadService> _threadMap = Map<int, ThreadService>();
   int _lastRunIndex = -1;
 
-  static set logger(AIsolateLogger logger) {
-    IsolateService.logger = logger;
+  static set logger(AThreadLogger logger) {
+    ThreadService.logger = logger;
   }
 
-  static AIsolateLogger get logger {
-    return IsolateService.logger;
+  static AThreadLogger get logger {
+    return ThreadService.logger;
   }
 
   /// 构建一个隔离线程池
-  IsolatePool.build(int threadCount, [String tag])
+  ThreadPool.build(int threadCount, [String tag])
       : _threadCount = threadCount ?? 1,
         _tag = tag ?? _randomTag();
 
@@ -66,24 +66,24 @@ class IsolatePool {
   /// 停止隔离线程池
   void stop() {
     if (_threadMap != null) {
-      _threadMap.values.forEach((IsolateService thread) {
+      _threadMap.values.forEach((ThreadService thread) {
         thread.stop();
       });
       _threadMap.clear();
     }
   }
 
-  Future<IsolateService> _getNextThread() async {
+  Future<ThreadService> _getNextThread() async {
     if (_lastRunIndex < 0) {
       _lastRunIndex = 0;
     } else {
       _lastRunIndex = (++_lastRunIndex) % _threadCount;
     }
 
-    IsolateService thread = _threadMap[_lastRunIndex];
+    ThreadService thread = _threadMap[_lastRunIndex];
     if (null == thread || !thread.isRunning) {
       final tag = "${_tag}_$_lastRunIndex";
-      thread = IsolateService.build(tag);
+      thread = ThreadService.build(tag);
       await thread.start();
       _threadMap[_lastRunIndex] = thread;
     }
