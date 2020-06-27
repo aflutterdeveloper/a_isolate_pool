@@ -1,7 +1,6 @@
 import 'dart:isolate';
 
-import 'package:aisolatepool/isolate_pool.dart';
-import 'package:aisolatepool/isolate_service.dart';
+import 'package:a_thread_pool/a_thread_pool.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -11,11 +10,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'ThreadPool Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Thread Pool Home Page'),
     );
   }
 }
@@ -34,14 +33,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    IsolatePool.logger = (level, tag, message){
+    ThreadPool.logger = (level, tag, message){
       print("level:$level $tag $message");
     };
 
     //Run testIsolateRun in the isolated thread pool
-    IsolatePool.io.run(testIsolateRun, "params for testIsolateRun");
+    ThreadPool.io.run(testThreadRun, "params for testThreadRun");
     //Run testIsolateRun in the isolated thread pool with custom params
-    IsolatePool.io.run(testStaticIsolateRun, _AnyParam(true, 200, 200.0,"stringParam"))
+    ThreadPool.io.run(testStaticThreadRun, _AnyParam(true, 200, 200.0,"stringParam"))
         .catchError((error){
     //catch exception from isolate thread
     });
@@ -84,18 +83,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //define a static function
-  static bool testStaticIsolateRun(Object any) {
-    IsolatePool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+  static bool testStaticThreadRun(Object any) {
+    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
     return true;
   }
-
-
 }
 
 
 //define a top-level function
-bool testIsolateRun(Object any) {
-  IsolatePool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+bool testThreadRun(Object any) {
+  ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
   return true;
 }
 

@@ -5,15 +5,15 @@ Help developers use Isolate more friendly under the flutter framework to activat
 ### example:
 ```
 //define a top-level function
-bool testIsolateRun(Object any) {
-  ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+bool testThreadRun(Object any) {
+  ThreadPool.logger(LOG_LEVEL.INFO, "testThreadRun", "working on thread ${Isolate.current.toString()}, param:$any");
   return true;
 }
 
-//Run testIsolateRun in the isolated thread pool
-ThreadPool.io.run(testIsolateRun, "params for testIsolateRun");
+//Run testThreadRun in the isolated thread pool
+ThreadPool.io.run(testThreadRun, "params for testThreadRun");
 //Run testIsolateRun in the isolated thread pool with custom params
-ThreadPool.io.run(testIsolateRun, _AnyParam(true, 200, 200.0,"stringParam"))
+ThreadPool.io.run(testThreadRun, _AnyParam(true, 200, 200.0,"stringParam"))
         .catchError((error){
         //catch exception from isolate thread
 });
