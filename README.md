@@ -1,4 +1,4 @@
-# isolate pool
+# thread pool
 Help developers use Isolate more friendly under the flutter framework to activate the multi-core performance of the device.
 
 ## Getting Started
