@@ -23,10 +23,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:a_thread_pool/exception/a_exception_factory.dart';
 import 'package:dio/dio.dart';
 
-import 'a_exception.dart';
-import 'error_format.dart';
+import 'exception/a_exception.dart';
+import 'exception/error_format.dart';
 
 typedef ARunnable<T, R> = FutureOr<R> Function(T param);
 typedef AVoidRunnable = Future<void> Function();
@@ -49,9 +50,9 @@ class ThreadService {
 
   ///构建一个线程服务
   ///@param String tag 线程标识
-  ThreadService.build([String tag]) : _tag = tag ?? _randomTag() {
+  ThreadService.build([String tag, AExceptionFactory factory]) : _tag = tag ?? _randomTag() {
     logger(LOG_LEVEL.INFO, "IsolatePool", "building isolate $_tag");
-    _client = _IsolateClient(_tag);
+    _client = _IsolateClient(_tag, factory);
   }
 
   ///启动线程服务
@@ -68,14 +69,24 @@ class ThreadService {
     }
   }
 
-  ///在线程中执一runnable
+  ///在线程中执行runnable
   ///@param runnable 要执行的函数实体
   ///The function must be a top-level function or a static method that can be
   ///called with a single argument,that is, a compile-time constant function
   ///value which accepts at least one positional parameter and has at most one
   /// required positional parameter.
   FutureOr<R> run<T, R>(ARunnable<T, R> runnable, T param) {
-    return _client.send(runnable, param);
+    return _client.send(null, runnable, param);
+  }
+
+  ///在线程中延迟执行runnable
+  ///@param runnable 要执行的函数实体
+  ///The function must be a top-level function or a static method that can be
+  ///called with a single argument,that is, a compile-time constant function
+  ///value which accepts at least one positional parameter and has at most one
+  /// required positional parameter.
+  FutureOr<R> runDelay<T, R>(Duration duration, ARunnable<T, R> runnable, T param) {
+    return _client.send(duration, runnable, param);
   }
 
   ///线程是否在运行
@@ -102,7 +113,8 @@ class ThreadService {
 
 class _IsolateClient {
   Isolate _nativeThread;
-  String _tag;
+  final String _tag;
+  final AExceptionFactory _exceptionFactory;
 
   final Map<int, Completer> _responseMap = Map<int, Completer>();
   int _reqSeqSeed = 0;
@@ -112,7 +124,7 @@ class _IsolateClient {
   SendPort _serverPort;
   bool _working = false;
 
-  _IsolateClient(this._tag);
+  _IsolateClient(this._tag, this._exceptionFactory);
 
   Future connect() async {
     _working = true;
@@ -159,7 +171,7 @@ class _IsolateClient {
               LOG_LEVEL.INFO, _tag, "thread client closed");
         });
 
-    final initParam = _ServiceInit(_receivePort.sendPort, _tag);
+    final initParam = _ServiceInit(_receivePort.sendPort, _tag, _exceptionFactory);
     _nativeThread = await Isolate.spawn(_nativeService, initParam,
         onExit: _receivePort.sendPort,
         errorsAreFatal: true,
@@ -168,11 +180,11 @@ class _IsolateClient {
     return initCompleter.future;
   }
 
-  Future<R> send<T, R>(ARunnable<T, R> runnable, T param) {
+  Future<R> send<T, R>(Duration duration, ARunnable<T, R> runnable, T param) {
     Completer<R> completer = Completer<R>();
     int runnableIndex = _seq();
     _responseMap[runnableIndex] = completer;
-    _serverPort.send(_ServiceRequest<T, R>(runnableIndex, runnable, param));
+    _serverPort.send(_ServiceRequest<T, R>(duration, runnableIndex, runnable, param));
     return completer.future;
   }
 
@@ -196,38 +208,34 @@ class _IsolateClient {
 
 class _IsolateServer {
   final String _tag;
+  final AExceptionFactory _default = AExceptionFactory();
+  final AExceptionFactory _exceptionFactory;
   final ReceivePort _receivePort = ReceivePort();
   SendPort _clientPort;
   static SendPort loggerPort;
 
-  _IsolateServer(this._clientPort, this._tag) {
+  _IsolateServer(this._clientPort, this._tag, this._exceptionFactory) {
     loggerPort = _clientPort;
 
     _receivePort.listen(
         (request) async {
           if (request is _ServiceRequest) {
             try {
+              if (request.delay != null) {
+                await Future.delayed(request.delay);
+              }
+
               final result = await request.invoke();
               _clientPort.send(_ServiceResponse(request.seq, result));
             } catch (err, stack) {
+              AExceptionFactory _factory = _exceptionFactory ?? _default;
+              final exception = _factory.build(err, stack);
+
               ThreadService._threadServiceLogger(LOG_LEVEL.ERROR,
-                  "_ThreadServer", ErrorFormat(err, stack).toJson());
-
-              if (err is AException) {
-                _clientPort.send(_ServiceError(request.seq, err));
-                return;
-              } else if ((err is DioError && err.error is AException)) {
-                _clientPort.send(_ServiceError(request.seq, err.error));
-                return;
-              }
-
-              String errorMessage = json.encode({
-                'type': '${err.runtimeType}',
-                'value': '$err',
-              });
+                  "_ThreadServer", exception.error);
 
               _clientPort
-                  .send(_ServiceError(request.seq, AException(errorMessage)));
+                  .send(_ServiceError(request.seq, exception));
             }
           } else if (request is _ServiceDestroy) {
             ThreadService._threadServiceLogger(
@@ -252,7 +260,7 @@ class _IsolateServer {
 }
 
 void _nativeService(_ServiceInit initParam) {
-  _IsolateServer(initParam.clientPort, initParam.tag);
+  _IsolateServer(initParam.clientPort, initParam.tag, initParam._exceptionFactory);
 }
 
 bool isThread() {
@@ -262,8 +270,9 @@ bool isThread() {
 class _ServiceInit {
   final SendPort clientPort;
   final String tag;
+  final AExceptionFactory _exceptionFactory;
 
-  _ServiceInit(this.clientPort, this.tag);
+  _ServiceInit(this.clientPort, this.tag, this._exceptionFactory);
 }
 
 class _ServiceDestroy {
@@ -279,9 +288,10 @@ class _ServiceInitResponse {
 class _ServiceRequest<T, R> {
   final int seq;
   final T param;
+  final Duration delay;
   final ARunnable<T, R> runnable;
 
-  _ServiceRequest(this.seq, this.runnable, this.param);
+  _ServiceRequest(this.delay, this.seq, this.runnable, this.param);
 
   FutureOr<R> invoke() async {
     return await runnable(param);

@@ -22,6 +22,9 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:a_thread_pool/exception/a_exception_factory.dart';
+
+import 'exception/dio_exception_builder.dart';
 import 'thread_service.dart';
 
 class ThreadPool {
@@ -33,6 +36,8 @@ class ThreadPool {
   final Map<int, ThreadService> _threadMap = Map<int, ThreadService>();
   int _lastRunIndex = -1;
 
+  static AExceptionFactory _exceptionFactory = AExceptionFactory();
+
   static set logger(AThreadLogger logger) {
     ThreadService.logger = logger;
   }
@@ -41,10 +46,20 @@ class ThreadPool {
     return ThreadService.logger;
   }
 
+  static addExceptionBuilder(AExceptionBuilder builder) {
+    _exceptionFactory.addBuilder(builder);
+  }
+
+  static removeExceptionBuilder(AExceptionBuilder builder) {
+    _exceptionFactory.removeBuilder(builder);
+  }
+
   /// 构建一个隔离线程池
   ThreadPool.build(int threadCount, [String tag])
       : _threadCount = threadCount ?? 1,
-        _tag = tag ?? _randomTag();
+        _tag = tag ?? _randomTag(){
+    _exceptionFactory.addBuilder(DioExceptionBuilder());
+  }
 
   ///在隔离线程中执runnable
   ///@param runnable 要执行的函数实体
