@@ -52,10 +52,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     print(response);
 
+    //catch AException from isolate thread
     await ThreadPool.io.run(testExceptionStaticThreadRun, "exception test").catchError((err){
       print("exception from thread:${err.runtimeType}, $err");
     });
 
+    //catch any exception from isolate thread
     await ThreadPool.io.delay(Duration(seconds: 3), testLambdaExceptionStaticThreadRun, "exception test").catchError((err){
       print("exception from thread:${err.runtimeType}, $err");
     });
@@ -71,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            FlatButton(child: Text("Run Isolate Thread Pool Demo"),onPressed: (){
+            FlatButton(child: Text("Click Run Isolate Thread Pool Demo"),onPressed: (){
               _runDemo();
             },),
           ],
