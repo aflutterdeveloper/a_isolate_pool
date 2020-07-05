@@ -13,5 +13,4 @@ class DioExceptionBuilder implements AExceptionBuilder {
     }
     return null;
   }
-
 }

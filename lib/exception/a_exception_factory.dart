@@ -44,11 +44,6 @@ class _DefaultAExceptionBuilder implements AExceptionBuilder {
   AException build(err, stack) {
     if (null == err) {}
     final errorStack = StackFormat(stack).toJson();
-    String errorMessage = json.encode({
-      'type': '${err.runtimeType}',
-      'value': errorStack,
-    });
-
-    return AException(errorMessage, exceptionType: err.runtimeType);
+    return AException(errorStack, exceptionType: err.runtimeType);
   }
 }

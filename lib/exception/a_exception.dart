@@ -24,7 +24,7 @@ class AException {
   AException(this.error, {this.exceptionType});
 
   final String error;
-  final Type  exceptionType;
+  final Type exceptionType;
 
   @override
   String toString() {

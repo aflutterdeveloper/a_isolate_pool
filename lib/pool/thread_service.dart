@@ -21,8 +21,7 @@
 
 import 'dart:async';
 import 'dart:isolate';
-
-import 'exception/a_exception_factory.dart';
+import '../exception/a_exception_factory.dart';
 
 typedef ARunnable<T, R> = FutureOr<R> Function(T param);
 typedef AVoidRunnable = Future<void> Function();
@@ -81,8 +80,8 @@ class ThreadService {
   ///called with a single argument,that is, a compile-time constant function
   ///value which accepts at least one positional parameter and has at most one
   /// required positional parameter.
-  FutureOr<R> delay<T, R>(Duration duration, ARunnable<T, R> runnable,
-      T param) {
+  FutureOr<R> delay<T, R>(
+      Duration duration, ARunnable<T, R> runnable, T param) {
     return _client.send(duration, runnable, param);
   }
 
@@ -91,14 +90,11 @@ class ThreadService {
   bool get isRunning => _client._working;
 
   static String _randomTag() {
-    return DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString();
+    return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
-  static void _threadServiceLogger(LOG_LEVEL level, String tag,
-      String message) {
+  static void _threadServiceLogger(
+      LOG_LEVEL level, String tag, String message) {
     if (null != _IsolateServer.loggerPort) {
       _IsolateServer.loggerPort.send(_ServiceLog(level, tag, message));
     } else {
@@ -139,7 +135,7 @@ class _IsolateClient {
 
     Completer initCompleter = Completer();
     _receivePort.listen(
-            (dynamic response) {
+        (dynamic response) {
           if (response is _ServiceResponse) {
             final completer = _responseMap.remove(response.seq);
             if (null != completer) {
@@ -171,8 +167,8 @@ class _IsolateClient {
               LOG_LEVEL.INFO, _tag, "thread client closed");
         });
 
-    final initParam = _ServiceInit(
-        _receivePort.sendPort, _tag, _exceptionFactory);
+    final initParam =
+        _ServiceInit(_receivePort.sendPort, _tag, _exceptionFactory);
     _nativeThread = await Isolate.spawn(_nativeService, initParam,
         onExit: _receivePort.sendPort,
         errorsAreFatal: true,
@@ -185,8 +181,8 @@ class _IsolateClient {
     Completer<R> completer = Completer<R>();
     int runnableIndex = _seq();
     _responseMap[runnableIndex] = completer;
-    _serverPort.send(
-        _ServiceRequest<T, R>(duration, runnableIndex, runnable, param));
+    _serverPort
+        .send(_ServiceRequest<T, R>(duration, runnableIndex, runnable, param));
     return completer.future;
   }
 
@@ -220,7 +216,7 @@ class _IsolateServer {
     loggerPort = _clientPort;
 
     _receivePort.listen(
-            (request) async {
+        (request) async {
           if (request is _ServiceRequest) {
             try {
               if (request.delay != null && request.delay.inMilliseconds > 0) {
@@ -233,12 +229,11 @@ class _IsolateServer {
               AExceptionFactory _factory = _exceptionFactory ?? _default;
               final exception = _factory.build(err, stack);
 
-              ThreadService._threadServiceLogger(LOG_LEVEL.ERROR,
-                  "_ThreadServer", exception.error);
+              ThreadService._threadServiceLogger(
+                  LOG_LEVEL.ERROR, "_ThreadServer", exception.error);
 
               try {
-                _clientPort
-                    .send(_ServiceError(request.seq, exception));
+                _clientPort.send(_ServiceError(request.seq, exception));
               } catch (ignore, ignoreStack) {
                 _clientPort.send(_ServiceError(
                     request.seq, _factory.defaultBuilder.build(err, stack)));

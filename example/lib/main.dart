@@ -33,7 +33,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    ThreadPool.logger = (level, tag, message){
+    ThreadPool.logger = (level, tag, message) {
       print("level:$level $tag $message");
     };
 
@@ -46,19 +46,28 @@ class _MyHomePageState extends State<MyHomePage> {
     //Run testIsolateRun in the isolated thread pool
     ThreadPool.io.run(testThreadRun, "params for testThreadRun");
     //Run testIsolateRun in the isolated thread pool with custom params
-    final response = await ThreadPool.io.run(testStaticThreadRun, _AnyParam(true, 200, 200.0,"stringParam", {"kev1":0, "key2":"any type"}, ["fasfa", 1000]))
-        .catchError((error){
+    final response = await ThreadPool.io
+        .run(
+            testStaticThreadRun,
+            _AnyParam(true, 200, 200.0, "stringParam",
+                {"kev1": 0, "key2": "any type"}, ["fasfa", 1000]))
+        .catchError((error) {
       //catch exception from isolate thread
     });
     print(response);
 
     //catch AException from isolate thread
-    await ThreadPool.io.run(testExceptionStaticThreadRun, "exception test").catchError((err){
+    await ThreadPool.io
+        .run(testExceptionStaticThreadRun, "exception test")
+        .catchError((err) {
       print("exception from thread:${err.runtimeType}, $err");
     });
 
     //catch any exception from isolate thread
-    await ThreadPool.io.delay(Duration(seconds: 3), testLambdaExceptionStaticThreadRun, "exception test").catchError((err){
+    await ThreadPool.io
+        .delay(Duration(seconds: 3), testLambdaExceptionStaticThreadRun,
+            "exception test")
+        .catchError((err) {
       print("exception from thread:${err.runtimeType}, $err");
     });
   }
@@ -73,9 +82,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            FlatButton(child: Text("Click Run Isolate Thread Pool Demo"),onPressed: (){
-              _runDemo();
-            },),
+            FlatButton(
+              child: Text("Click Run Isolate Thread Pool Demo"),
+              onPressed: () {
+                _runDemo();
+              },
+            ),
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -84,28 +96,36 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //define a static function
   static _AnyResponse testStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current}, param:$any");
-    return _AnyResponse(false, 100, 300.0,"stringResponse", {"kev1Response":0, "key2Response":"any type"}, ["Response:fasfa", 2000]);
+    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun",
+        "working on thread ${Isolate.current}, param:$any");
+    return _AnyResponse(
+        false,
+        100,
+        300.0,
+        "stringResponse",
+        {"kev1Response": 0, "key2Response": "any type"},
+        ["Response:fasfa", 2000]);
   }
 
   static _AnyResponse testExceptionStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+    ThreadPool.logger(LOG_LEVEL.INFO, "testExceptionStaticThreadRun",
+        "working on thread ${Isolate.current}, param:$any");
     throw MyException("my excption from isolate, param:$any");
   }
 
   static _AnyResponse testLambdaExceptionStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testLambdaExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+    ThreadPool.logger(LOG_LEVEL.INFO, "testLambdaExceptionStaticThreadRun",
+        "working on thread ${Isolate.current}, param:$any");
     throw MyLambdaException("my lambda excption from isolate, param:$any");
   }
 }
 
-
 //define a top-level function
 bool testThreadRun(Object any) {
-  ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
+  ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun",
+      "working on thread ${Isolate.current.toString()}, param:$any");
   return true;
 }
-
 
 class _AnyParam {
   final bool boolParam;
@@ -115,7 +135,8 @@ class _AnyParam {
   final Map<String, dynamic> mapParam;
   final List<dynamic> listParam;
 
-  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam, this.mapParam, this.listParam);
+  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam,
+      this.mapParam, this.listParam);
 
   @override
   String toString() {
@@ -131,7 +152,8 @@ class _AnyResponse {
   final Map<String, dynamic> mapParam;
   final List<dynamic> listParam;
 
-  _AnyResponse(this.boolParam, this.intParam, this.doubleParam, this.stringParam, this.mapParam, this.listParam);
+  _AnyResponse(this.boolParam, this.intParam, this.doubleParam,
+      this.stringParam, this.mapParam, this.listParam);
 
   @override
   String toString() {
@@ -139,12 +161,11 @@ class _AnyResponse {
   }
 }
 
-class MyException extends AException{
+class MyException extends AException {
   MyException(String error) : super(error);
 }
 
-class MyLambdaException{
-  ARunnable runnable = (param){};
+class MyLambdaException {
+  ARunnable runnable = (param) {};
   MyLambdaException(String error);
 }
-

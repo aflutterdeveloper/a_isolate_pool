@@ -21,8 +21,8 @@
 
 import 'dart:io';
 import 'dart:math';
-import 'exception/a_exception_factory.dart';
-import 'exception/dio_exception_builder.dart';
+import '../exception/a_exception_factory.dart';
+import '../exception/dio_exception_builder.dart';
 import 'thread_service.dart';
 
 class ThreadPool {
@@ -57,7 +57,7 @@ class ThreadPool {
   /// 构建一个隔离线程池
   ThreadPool.build(int threadCount, [String tag])
       : _threadCount = threadCount ?? 1,
-        _tag = tag ?? _randomTag(){
+        _tag = tag ?? _randomTag() {
     _exceptionFactory.addBuilder(DioExceptionBuilder());
   }
 

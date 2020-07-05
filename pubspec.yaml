@@ -3,17 +3,6 @@ description: a isolate util, help developers use Isolate more friendly under the
 version: 1.1.2
 homepage: https://github.com/aflutterdeveloper/a_isolate_pool
 
-include: package:pedantic/analysis_options.1.8.0.yaml
-
-analyzer:
-  exclude: [build/**]
-  strong-mode:
-    implicit-casts: false
-
-linter:
-  rules:
-    - camel_case_types
-
 environment:
   sdk: ">=2.1.0 <3.0.0"
 
