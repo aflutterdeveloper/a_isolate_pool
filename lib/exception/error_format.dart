@@ -23,27 +23,14 @@ import 'dart:convert';
 
 import 'package:stack_trace/stack_trace.dart';
 
-class ErrorFormat {
-  ErrorFormat(this.exception, this.stackTrace);
-
-  final dynamic exception;
+class StackFormat {
+  StackFormat(this.stackTrace);
   final dynamic stackTrace;
 
   String toJson() {
     final Map<String, dynamic> errorJson = Map<String, dynamic>();
-    if (exception != null) {
-      errorJson['exception'] = [
-        <String, dynamic>{
-          'type': '${exception.runtimeType}',
-          'value': '$exception',
-        }
-      ];
-    }
-
     if (stackTrace != null) {
-      errorJson['stacktrace'] = <String, dynamic>{
-        'frames': _encodeStackTrace(stackTrace),
-      };
+      errorJson['stacktrace'] = _encodeStackTrace(stackTrace);
     }
     try {
       return json.encode(errorJson);

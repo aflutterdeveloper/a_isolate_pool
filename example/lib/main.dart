@@ -37,20 +37,27 @@ class _MyHomePageState extends State<MyHomePage> {
       print("level:$level $tag $message");
     };
 
-    //Run testIsolateRun in the isolated thread pool
-    ThreadPool.io.run(testThreadRun, "params for testThreadRun");
-    //Run testIsolateRun in the isolated thread pool with custom params
-    ThreadPool.io.run(testStaticThreadRun, _AnyParam(true, 200, 200.0,"stringParam"))
-        .catchError((error){
-    //catch exception from isolate thread
-    });
+    _runDemo();
 
     super.initState();
   }
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  void _runDemo() async {
+    //Run testIsolateRun in the isolated thread pool
+    ThreadPool.io.run(testThreadRun, "params for testThreadRun");
+    //Run testIsolateRun in the isolated thread pool with custom params
+    final response = await ThreadPool.io.run(testStaticThreadRun, _AnyParam(true, 200, 200.0,"stringParam", {"kev1":0, "key2":"any type"}, ["fasfa", 1000]))
+        .catchError((error){
+      //catch exception from isolate thread
+    });
+    print(response);
+
+    await ThreadPool.io.run(testExceptionStaticThreadRun, "exception test").catchError((err){
+      print("exception from thread:${err.runtimeType}, $err");
+    });
+
+    await ThreadPool.io.delay(Duration(seconds: 3), testLambdaExceptionStaticThreadRun, "exception test").catchError((err){
+      print("exception from thread:${err.runtimeType}, $err");
     });
   }
 
@@ -64,28 +71,29 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+            FlatButton(child: Text("Run Isolate Thread Pool Demo"),onPressed: (){
+              _runDemo();
+            },),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
   //define a static function
-  static bool testStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
-    return true;
+  static _AnyResponse testStaticThreadRun(Object any) {
+    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current}, param:$any");
+    return _AnyResponse(false, 100, 300.0,"stringResponse", {"kev1Response":0, "key2Response":"any type"}, ["Response:fasfa", 2000]);
+  }
+
+  static _AnyResponse testExceptionStaticThreadRun(Object any) {
+    ThreadPool.logger(LOG_LEVEL.INFO, "testExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+    throw MyException("my excption from isolate, param:$any");
+  }
+
+  static _AnyResponse testLambdaExceptionStaticThreadRun(Object any) {
+    ThreadPool.logger(LOG_LEVEL.INFO, "testLambdaExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+    throw MyLambdaException("my lambda excption from isolate, param:$any");
   }
 }
 
@@ -102,12 +110,39 @@ class _AnyParam {
   final int intParam;
   final double doubleParam;
   final String stringParam;
+  final Map<String, dynamic> mapParam;
+  final List<dynamic> listParam;
 
-  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam);
+  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam, this.mapParam, this.listParam);
 
   @override
   String toString() {
-    return "bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam";
+    return "bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam, map:$mapParam, list:$listParam";
   }
+}
+
+class _AnyResponse {
+  final bool boolParam;
+  final int intParam;
+  final double doubleParam;
+  final String stringParam;
+  final Map<String, dynamic> mapParam;
+  final List<dynamic> listParam;
+
+  _AnyResponse(this.boolParam, this.intParam, this.doubleParam, this.stringParam, this.mapParam, this.listParam);
+
+  @override
+  String toString() {
+    return "response from thread, bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam, map:$mapParam, list:$listParam";
+  }
+}
+
+class MyException extends AException{
+  MyException(String error) : super(error);
+}
+
+class MyLambdaException{
+  ARunnable runnable = (param){};
+  MyLambdaException(String error);
 }
 

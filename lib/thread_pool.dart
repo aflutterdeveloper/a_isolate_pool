@@ -46,10 +46,12 @@ class ThreadPool {
     return ThreadService.logger;
   }
 
+  /// 注册异常转化器,使异常能够在isolate间传递
   static addExceptionBuilder(AExceptionBuilder builder) {
     _exceptionFactory.addBuilder(builder);
   }
 
+  /// 注销异常转化器
   static removeExceptionBuilder(AExceptionBuilder builder) {
     _exceptionFactory.removeBuilder(builder);
   }
@@ -61,7 +63,7 @@ class ThreadPool {
     _exceptionFactory.addBuilder(DioExceptionBuilder());
   }
 
-  ///在隔离线程中执runnable
+  ///在隔离线程中执行runnable
   ///@param runnable 要执行的函数实体
   ///@param param  透传给runnable的参数
   ///The runnable must be a top-level function or a static method that can be
@@ -70,8 +72,20 @@ class ThreadPool {
   /// required positional parameter.
   Future<R> run<T, R>(ARunnable<T, R> runnable, T param,
       {String debugLabel}) async {
+    return delay(null, runnable, param);
+  }
+
+  ///在隔离线程中延迟duration后再执行runnable
+  ///@param runnable 要执行的函数实体
+  ///@param param  透传给runnable的参数
+  ///The runnable must be a top-level function or a static method that can be
+  ///called with a single argument,that is, a compile-time constant function
+  ///value which accepts at least one positional parameter and has at most one
+  /// required positional parameter.
+  Future<R> delay<T, R>(Duration duration, ARunnable<T, R> runnable, T param,
+      {String debugLabel}) async {
     if (_threadCount > 0) {
-      return (await _getNextThread()).run(runnable, param);
+      return (await _getNextThread()).delay(duration, runnable, param);
     } else {
       logger(LOG_LEVEL.ERROR, "IsolatePool", "run thread pool is empty");
     }
