@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'a_exception.dart';
 import 'error_format.dart';
 
 /// isolate异常转化工厂, 使异常能够在isolate间传递
 class AExceptionFactory {
   List<AExceptionBuilder> builderList = List<AExceptionBuilder>();
-  final AExceptionBuilder defaultBuilder = _DefaultAExceptionBuilder();
+  final AExceptionBuilder defaultBuilder = DefaultAExceptionBuilder();
 
   /// 注入异常转化器 builder
   void addBuilder(AExceptionBuilder builder) {
@@ -39,7 +37,7 @@ abstract class AExceptionBuilder {
   AException build(dynamic anyException, dynamic stack);
 }
 
-class _DefaultAExceptionBuilder implements AExceptionBuilder {
+class DefaultAExceptionBuilder implements AExceptionBuilder {
   @override
   AException build(err, stack) {
     if (null == err) {}

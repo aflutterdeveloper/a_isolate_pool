@@ -45,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _runDemo() async {
     //Run testIsolateRun in the isolated thread pool
     ThreadPool.io.run(testThreadRun, "params for testThreadRun");
+    ThreadPool.addExceptionBuilder(MyExceptionBuilder());
     //Run testIsolateRun in the isolated thread pool with custom params
     final response = await ThreadPool.io
         .run(
@@ -168,4 +169,11 @@ class MyException extends AException {
 class MyLambdaException {
   ARunnable runnable = (param) {};
   MyLambdaException(String error);
+}
+
+class MyExceptionBuilder extends DefaultAExceptionBuilder {
+  @override
+  AException build(anyException, stack) {
+    return super.build(anyException, stack);
+  }
 }

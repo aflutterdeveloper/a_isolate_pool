@@ -24,6 +24,7 @@ import 'dart:math';
 import '../exception/a_exception_factory.dart';
 import '../exception/dio_exception_builder.dart';
 import 'thread_service.dart';
+import 'types.dart';
 
 class ThreadPool {
   static final ThreadPool io = ThreadPool.build(

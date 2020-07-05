@@ -22,11 +22,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import '../exception/a_exception_factory.dart';
-
-typedef ARunnable<T, R> = FutureOr<R> Function(T param);
-typedef AVoidRunnable = Future<void> Function();
-typedef AThreadLogger = void Function(
-    LOG_LEVEL level, String tag, String message);
+import 'types.dart';
 
 class ThreadService {
   final String _tag;
@@ -234,7 +230,7 @@ class _IsolateServer {
 
               try {
                 _clientPort.send(_ServiceError(request.seq, exception));
-              } catch (ignore, ignoreStack) {
+              } catch (ignore) {
                 _clientPort.send(_ServiceError(
                     request.seq, _factory.defaultBuilder.build(err, stack)));
               }
@@ -313,13 +309,6 @@ class _ServiceError {
 
   final int seq;
   final dynamic error;
-}
-
-enum LOG_LEVEL {
-  DEBUG,
-  INFO,
-  WARN,
-  ERROR,
 }
 
 class _ServiceLog {
