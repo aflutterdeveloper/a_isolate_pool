@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:a_thread_pool/a_thread_pool.dart';
-
+import 'a_exception.dart';
 import 'error_format.dart';
 
 /// isolate异常转化工厂, 使异常能够在isolate间传递

@@ -1,6 +1,7 @@
-import 'package:a_thread_pool/exception/a_exception.dart';
-import 'package:a_thread_pool/exception/a_exception_factory.dart';
 import 'package:dio/dio.dart';
+
+import 'a_exception.dart';
+import 'a_exception_factory.dart';
 
 class DioExceptionBuilder implements AExceptionBuilder {
   @override
