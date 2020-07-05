@@ -4,7 +4,7 @@ Help developers use Isolate more friendly under the flutter framework to activat
 ## Getting Started
 ### example:
 ```
-//Run testIsolateRun in the isolated thread pool
+    //Run testIsolateRun in the isolated thread pool
     ThreadPool.io.run(testThreadRun, "params for testThreadRun");
     //Run testIsolateRun in the isolated thread pool with custom params
     final response = await ThreadPool.io.run(testStaticThreadRun, _AnyParam(true, 200, 200.0,"stringParam", {"kev1":0, "key2":"any type"}, ["fasfa", 1000]))
@@ -12,17 +12,32 @@ Help developers use Isolate more friendly under the flutter framework to activat
       //catch exception from isolate thread
     });
     print(response);
-
+    
     //catch AException from isolate thread
     await ThreadPool.io.run(testExceptionStaticThreadRun, "exception test").catchError((err){
       print("exception from thread:${err.runtimeType}, $err");
     });
-
+    
     //catch any exception from isolate thread
     await ThreadPool.io.delay(Duration(seconds: 3), testLambdaExceptionStaticThreadRun, "exception test").catchError((err){
       print("exception from thread:${err.runtimeType}, $err");
     });
 
+    //define a static function
+    static _AnyResponse testStaticThreadRun(Object any) {
+        ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current}, param:$any");
+        return _AnyResponse(false, 100, 300.0,"stringResponse", {"kev1Response":0, "key2Response":"any type"}, ["Response:fasfa", 2000]);
+    }
+    
+    static _AnyResponse testExceptionStaticThreadRun(Object any) {
+        ThreadPool.logger(LOG_LEVEL.INFO, "testExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+        throw MyException("my excption from isolate, param:$any");
+    }
+    
+    static _AnyResponse testLambdaExceptionStaticThreadRun(Object any) {
+        ThreadPool.logger(LOG_LEVEL.INFO, "testLambdaExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
+        throw MyLambdaException("my lambda excption from isolate, param:$any");
+    }
 
 
 class _AnyParam {
@@ -38,24 +53,6 @@ class _AnyParam {
     return "bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam";
   }
 }
-
- //define a static function
-  static _AnyResponse testStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current}, param:$any");
-    return _AnyResponse(false, 100, 300.0,"stringResponse", {"kev1Response":0, "key2Response":"any type"}, ["Response:fasfa", 2000]);
-  }
-
-  static _AnyResponse testExceptionStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
-    throw MyException("my excption from isolate, param:$any");
-  }
-
-  static _AnyResponse testLambdaExceptionStaticThreadRun(Object any) {
-    ThreadPool.logger(LOG_LEVEL.INFO, "testLambdaExceptionStaticThreadRun", "working on thread ${Isolate.current}, param:$any");
-    throw MyLambdaException("my lambda excption from isolate, param:$any");
-  }
-}
-
 
 //define a top-level function
 bool testThreadRun(Object any) {

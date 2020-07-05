@@ -1,3 +1,4 @@
+## [1.1.1] - support delay
 ## [1.1.0] - support delay
 ## [1.0.9] - adjust README
 ## [1.0.8] - update demo
