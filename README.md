@@ -40,20 +40,6 @@ Help developers use Isolate more friendly under the flutter framework to activat
     }
 
 
-class _AnyParam {
-  final bool boolParam;
-  final int intParam;
-  final double doubleParam;
-  final String stringParam;
-
-  _AnyParam(this.boolParam, this.intParam, this.doubleParam, this.stringParam);
-
-  @override
-  String toString() {
-    return "bool:$boolParam, int:$intParam, double:$doubleParam, string:$stringParam";
-  }
-}
-
 //define a top-level function
 bool testThreadRun(Object any) {
   ThreadPool.logger(LOG_LEVEL.INFO, "testIsolateRun", "working on thread ${Isolate.current.toString()}, param:$any");
